@@ -1,9 +1,15 @@
+import { format } from "date-fns";
+
 import { Accordion } from "@/components/ui/accordion";
 import { useState, useEffect } from "react";
 import { FlightCard } from "./FlightCard";
 import { LoadMoreButton } from "./LoadMoreButton";
 import { Spinner } from "@/components/ui/Spinner";
 import { FlightSortControls } from "./FlightSortControls";
+import { usePriceCalendar } from "@/hooks/usePriceCalendar";
+import { ChartColumn, Table2, X } from "lucide-react";
+import { PriceTable } from "./PriceTable";
+import { PriceGraph } from "./PriceGraph";
 
 export const FlightList = ({
 	itineraries,
@@ -17,6 +23,8 @@ export const FlightList = ({
 	const [isLoading, setIsLoading] = useState(false);
 	const [displayCount, setDisplayCount] = useState(10);
 	const [isLoadingMore, setIsLoadingMore] = useState(false);
+	const [showChart, setShowChart] = useState(false);
+	const [showTable, setShowTable] = useState(false);
 	const [sortType, setSortType] = useState<SortType>("best");
 	const [sortOption, setSortOption] = useState<SortOption>("top");
 	const isRoundTrip = itineraries[0]?.legIds.length > 1;
@@ -25,6 +33,18 @@ export const FlightList = ({
 		(min, itinerary) => (itinerary.price.raw < min.price.raw ? itinerary : min),
 		itineraries[0],
 	);
+
+	// Get the first flight's date and airports for price calendar
+	const firstFlight = itineraries[0]?.legIds[0]
+		? legs[itineraries[0].legIds[0]]
+		: null;
+
+	const { data: priceData } = usePriceCalendar({
+		originSkyId: firstFlight?.origin.displayCode,
+		destinationSkyId: firstFlight?.destination.displayCode,
+		fromDate: firstFlight ? new Date(firstFlight.departure) : undefined,
+		page: "flightList",
+	});
 
 	// Handles the browser's back button functionality and updates the browser history based on the selectedOutboundLegId
 	useEffect(() => {
@@ -46,6 +66,34 @@ export const FlightList = ({
 	if (!itineraries?.length) {
 		return null;
 	}
+
+	const handleDateSelect = (date: Date) => {
+		setShowTable(false);
+
+		// Sort itineraries to bring flights matching the selected date to the top
+		const selectedDateStr = format(date, "yyyy-MM-dd");
+		const sortedByDate = [...itineraries].sort((a, b) => {
+			const legA = legs[a.legIds[0]];
+			const legB = legs[b.legIds[0]];
+			const dateA = format(new Date(legA.departure), "yyyy-MM-dd");
+			const dateB = format(new Date(legB.departure), "yyyy-MM-dd");
+
+			// If date matches exactly, put it at the top
+			if (dateA === selectedDateStr && dateB !== selectedDateStr) return -1;
+			if (dateB === selectedDateStr && dateA !== selectedDateStr) return 1;
+
+			// Otherwise sort by proximity to selected date
+			const diffA = Math.abs(new Date(dateA).getTime() - date.getTime());
+			const diffB = Math.abs(new Date(dateB).getTime() - date.getTime());
+			return diffA - diffB;
+		});
+
+		// Update the itineraries list with the sorted results
+		itineraries.splice(0, itineraries.length, ...sortedByDate);
+
+		// Reset the display count to show the top results
+		setDisplayCount(10);
+	};
 
 	const handleSelectFlight = async (legId: string) => {
 		setIsLoading(true);
@@ -113,6 +161,53 @@ export const FlightList = ({
 
 	return (
 		<div className="space-y-6 max-w-4xl mx-auto">
+			<div className="flex sm:justify-end justify-center mb-4 gap-2">
+				{!showChart && (
+					<button
+						type="button"
+						onClick={() => setShowTable(!showTable)}
+						className="text-sm px-4 py-2 rounded-md bg-blue-500/10 hover:bg-blue-500/20 transition-colors"
+					>
+						{showTable ? (
+							<div className="flex items-center">
+								<X className="inline-block mr-2" /> Price Grid
+							</div>
+						) : (
+							<div className="flex items-center">
+								<Table2 className="inline-block mr-2" /> Price Grid
+							</div>
+						)}
+					</button>
+				)}
+				{!showTable && (
+					<button
+						type="button"
+						onClick={() => setShowChart(!showChart)}
+						className="text-sm px-4 py-2 rounded-md bg-blue-500/10 hover:bg-blue-500/20 transition-colors"
+					>
+						{showChart ? (
+							<div className="flex items-center">
+								<X className="inline-block mr-2" /> Price Graph
+							</div>
+						) : (
+							<div className="flex items-center">
+								<ChartColumn className="inline-block mr-2" /> Price Graph
+							</div>
+						)}
+					</button>
+				)}
+			</div>
+			{showTable && (
+				<PriceTable
+					prices={priceData?.data.flights.days}
+					fromDate={firstFlight ? new Date(firstFlight.departure) : undefined}
+					toDate={
+						firstFlight?.arrival ? new Date(firstFlight.arrival) : undefined
+					}
+					onDateSelect={handleDateSelect}
+				/>
+			)}
+			{showChart && <PriceGraph prices={priceData?.data.flights.days} />}
 			<FlightSortControls
 				sortType={sortType}
 				setSortType={setSortType}

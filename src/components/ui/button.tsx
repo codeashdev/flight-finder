@@ -22,6 +22,8 @@ const buttonVariants = cva(
 				minus:
 					"flex items-center justify-center disabled:bg-lightButton dark:disabled:bg-darkButton bg-lightActiveButton text-primary dark:bg-darkButton hover:opacity-80 rounded-sm disabled:opacity-50 disabled:cursor-not-allowed",
 				plus: "flex items-center justify-center bg-lightActiveButton dark:bg-darkActiveButton text-primary rounded-sm hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed",
+				datePicker:
+					"w-full p-3 py-6 bg-transparent dark:bg-[#2f3136] text-black dark:text-white rounded-sm focus:outline-none focus:ring-1 focus:ring-[#4c4f57] placeholder-gray-400",
 			},
 
 			size: {

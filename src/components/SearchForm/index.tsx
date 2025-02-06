@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { format } from "date-fns";
 
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { TripTypeSelector } from "./TripTypeSelector";
@@ -10,9 +11,13 @@ import { useAirportSearch } from "@/hooks/useAirportSearch";
 import { swapLocations } from "@/utils/swapLocations";
 import { ArrowRightLeft } from "lucide-react";
 import { LocationInput } from "./LocationInput";
+import { DatePickerWithRange } from "../DatePicker/DatePicker";
+import { cn } from "@/lib/utils";
 
 export const SearchForm = () => {
 	const [values, setValues] = useState({
+		date: "",
+		returnDate: "",
 		tripType: "round-trip" as TripType,
 		cabinClass: "economy" as const,
 		passengers: {
@@ -171,6 +176,29 @@ export const SearchForm = () => {
 						airports={destinationAirports}
 						onSelect={handleDestinationSelect}
 						inputType="destination"
+					/>
+				</div>
+				<div
+					className={cn(
+						"flex gap-2 flex-1",
+						isMobile &&
+							"border-1 border-gray-300 dark:border-darkBorder rounded-sm",
+					)}
+				>
+					<DatePickerWithRange
+						showReturnDate={values.tripType === "round-trip"}
+						onSelect={(from, to) => {
+							setValues((prev) => ({
+								...prev,
+								date: from ? format(from, "yyyy-MM-dd") : "",
+								returnDate: to ? format(to, "yyyy-MM-dd") : "",
+							}));
+						}}
+						tripType={values.tripType}
+						onTripTypeChange={(type) =>
+							setValues((prev) => ({ ...prev, tripType: type }))
+						}
+						pageIndex={"flightsearch"}
 					/>
 				</div>
 			</div>

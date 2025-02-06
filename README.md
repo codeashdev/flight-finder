@@ -1,4 +1,4 @@
-# Flight Finde
+# Flight Finder
 
 A modern flight search application built with React, TypeScript, and TailwindCSS. This application allows users to search for flights, compare prices, and view detailed flight information with an intuitive user interface.
 

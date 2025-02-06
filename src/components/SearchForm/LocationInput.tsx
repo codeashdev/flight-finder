@@ -10,6 +10,7 @@ import {
 	AccordionItem,
 	AccordionTrigger,
 } from "@/components/ui/accordion";
+import { MobileLocationInput } from "./MobileLocationInput";
 
 export const LocationInput = ({
 	value,
@@ -25,12 +26,13 @@ export const LocationInput = ({
 	onSelect,
 	inputType,
 }: LocationInputProps) => {
+	const [inputTop, setInputTop] = useState(0);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const overlayRef = useRef<HTMLDivElement>(null);
 	const overlayInputRef = useRef<HTMLInputElement>(null);
 	const isChrome = useBrowserDetection("chrome");
 	const isMobile = useMediaQuery("(max-width: 640px)");
-	const [inputTop, setInputTop] = useState(0);
+	const isSmallScreen = useMediaQuery("(max-width: 768px)");
 
 	// Handles closing the dropdown when clicking outside
 	useEffect(() => {
@@ -93,7 +95,7 @@ export const LocationInput = ({
 				placeholder={placeholder}
 			/>
 
-			{showDropdown && (
+			{!isSmallScreen && showDropdown && (
 				<div className="fixed inset-0 z-40">
 					<div
 						ref={overlayRef}
@@ -206,6 +208,19 @@ export const LocationInput = ({
 						</div>
 					</div>
 				</div>
+			)}
+			{isSmallScreen && showDropdown && (
+				<MobileLocationInput
+					value={value}
+					placeholder={placeholder}
+					onChange={onChange}
+					onClose={() => setShowDropdown(false)}
+					status={status}
+					fetchStatus={fetchStatus}
+					airports={airports}
+					onSelect={onSelect}
+					inputType={inputType}
+				/>
 			)}
 		</div>
 	);

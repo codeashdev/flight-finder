@@ -66,3 +66,15 @@ type GroupedAirports = {
 	citySkyId?: string;
 	airports: Airport[];
 };
+
+type MobileLocationInputProps = {
+	value: string;
+	placeholder: string;
+	onChange: (value: string) => void;
+	onClose: () => void;
+	status: "idle" | "pending" | "error" | "success";
+	fetchStatus: "idle" | "fetching";
+	airports: Airport[] | undefined;
+	onSelect: (airport: Airport) => void;
+	inputType: "origin" | "destination";
+};

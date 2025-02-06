@@ -13,6 +13,7 @@ import { ArrowRightLeft } from "lucide-react";
 import { LocationInput } from "./LocationInput";
 import { DatePickerWithRange } from "../DatePicker/DatePicker";
 import { cn } from "@/lib/utils";
+import { usePriceCalendar } from "@/hooks/usePriceCalendar";
 
 export const SearchForm = () => {
 	const [values, setValues] = useState({
@@ -30,6 +31,7 @@ export const SearchForm = () => {
 	const [isPassengerOpen, setIsPassengerOpen] = useState(false);
 	const [isTripTypeOpen, setIsTripTypeOpen] = useState(false);
 	const [isCabinClassOpen, setIsCabinClassOpen] = useState(false);
+	const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 	const isMobile = useMediaQuery("(max-width: 640px)");
 
 	// Origin airport search
@@ -39,7 +41,6 @@ export const SearchForm = () => {
 		showDropdown: showOriginDropdown,
 		airports: originAirports,
 		status,
-
 		fetchStatus,
 		handleInputChange: handleOriginChange,
 		handleSelect: handleOriginSelect,
@@ -60,6 +61,14 @@ export const SearchForm = () => {
 		setShowDropdown: setShowDestinationDropdown,
 		dropdownRef: destinationDropdownRef,
 	} = useAirportSearch();
+
+	const { data: priceData } = usePriceCalendar({
+		originSkyId: selectedOrigin?.skyId,
+		destinationSkyId: selectedDestination?.skyId,
+		fromDate: values.date ? new Date(values.date) : undefined,
+		isCalendarOpen,
+		page: "searchForm",
+	});
 
 	// Swap locations between origin and destination
 	const handleSwapLocations = () => {
@@ -194,6 +203,9 @@ export const SearchForm = () => {
 								returnDate: to ? format(to, "yyyy-MM-dd") : "",
 							}));
 						}}
+						prices={priceData?.data.flights.days}
+						currency={priceData?.data.flights.currency}
+						onOpenChange={setIsCalendarOpen}
 						tripType={values.tripType}
 						onTripTypeChange={(type) =>
 							setValues((prev) => ({ ...prev, tripType: type }))

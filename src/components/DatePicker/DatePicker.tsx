@@ -21,12 +21,16 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import "./date-range.css";
+import { formatPrice } from "@/utils/format";
 
 export function DatePickerWithRange({
 	fromDate,
 	toDate,
 	showReturnDate = true,
 	onSelect,
+	prices = [],
+	currency = "USD",
+	onOpenChange,
 	tripType,
 	onTripTypeChange,
 	pageIndex,
@@ -41,6 +45,40 @@ export function DatePickerWithRange({
 		endDate: showReturnDate ? toDate || undefined : undefined,
 		key: "selection",
 	});
+	// Map of prices by date
+	const pricesByDate = React.useMemo(() => {
+		return prices.reduce(
+			(acc, price) => {
+				acc[price.day] = price;
+				return acc;
+			},
+			{} as Record<string, FlightPrice>,
+		);
+	}, [prices]);
+
+	// Day content renderer
+	const dayContent = (day: Date) => {
+		const dateString = format(day, "yyyy-MM-dd");
+		const price = pricesByDate[dateString];
+
+		return (
+			<div className="flex flex-col items-center">
+				<span>{format(day, "d")}</span>
+				{price && (
+					<p
+						className={cn(
+							"text-xs mt-0",
+							price.group === "low" && "text-green-500",
+							price.group === "medium" && "text-yellow-500",
+							price.group === "high" && "text-red-500",
+						)}
+					>
+						{formatPrice(price.price, currency)}
+					</p>
+				)}
+			</div>
+		);
+	};
 
 	const handleRangeSelect = (ranges: RangeKeyDict) => {
 		const selection = ranges.selection;
@@ -62,6 +100,7 @@ export function DatePickerWithRange({
 
 	const handleOpenChange = (open: boolean) => {
 		setIsOpen(open);
+		onOpenChange?.(open);
 	};
 
 	const handleTriggerClick = () => {
@@ -237,6 +276,7 @@ export function DatePickerWithRange({
 								weekdayDisplayFormat="EEEEE"
 								monthDisplayFormat="MMM yyyy"
 								color="#0ea5e9"
+								dayContentRenderer={dayContent}
 								startDatePlaceholder="Departure"
 								endDatePlaceholder="Return"
 							/>
@@ -253,6 +293,7 @@ export function DatePickerWithRange({
 								weekdayDisplayFormat="EEEEE"
 								monthDisplayFormat="MMM yyyy"
 								color="#0ea5e9"
+								dayContentRenderer={dayContent}
 								showDateDisplay={false}
 							/>
 						</>

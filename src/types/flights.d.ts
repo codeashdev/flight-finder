@@ -17,3 +17,27 @@ type Airport = {
 		};
 	};
 };
+
+type PriceCalendarResponse = {
+	status: boolean;
+	timestamp: number;
+	data: {
+		flights: {
+			noPriceLabel: string;
+			groups: Array<{
+				id: "low" | "medium" | "high";
+				label: string;
+			}>;
+			days: Array<{
+				day: string;
+				group: "low" | "medium" | "high";
+				price: number;
+			}>;
+			currency: string;
+		};
+		priceForReturnFlight: {
+			price: number;
+			currency: string;
+		};
+	};
+};

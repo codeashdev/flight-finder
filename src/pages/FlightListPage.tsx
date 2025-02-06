@@ -1,18 +1,20 @@
 import { useLocation, useNavigate } from "react-router";
 
 import { NavBar } from "@/components/NavBar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { searchFlights } from "@/services/api";
 import { Spinner } from "@/components/ui/Spinner";
 import { FlightList } from "@/components/FlightList";
+import { FlightListSearchForm } from "@/components/FlightList/FlightListSearchForm";
 
 const FlightListPage = () => {
 	const location = useLocation();
 	const navigate = useNavigate();
 
-	const currentSearchParams = location.state?.searchParams || null;
 	const { error: navigationError } = location.state || {};
+	const [currentSearchParams, setCurrentSearchParams] =
+		useState<FlightSearchParams | null>(location.state?.searchParams || null);
 
 	// Update URL state when search params change
 	useEffect(() => {
@@ -53,6 +55,9 @@ const FlightListPage = () => {
 			</>
 		);
 	}
+	const handleSearch = (newParams: FlightSearchParams) => {
+		setCurrentSearchParams(newParams);
+	};
 
 	if (navigationError) {
 		return (
@@ -79,6 +84,11 @@ const FlightListPage = () => {
 		<>
 			<NavBar />
 			<div className="container mx-auto px-4 py-8">
+				<FlightListSearchForm
+					initialValues={currentSearchParams}
+					onSearch={handleSearch}
+					isLoading={isLoading}
+				/>
 				{isLoading ? (
 					<div className="text-white text-center flex flex-row items-center gap-2 justify-center">
 						<Spinner />

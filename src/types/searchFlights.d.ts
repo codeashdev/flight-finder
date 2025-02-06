@@ -78,3 +78,9 @@ type MobileLocationInputProps = {
 	onSelect: (airport: Airport) => void;
 	inputType: "origin" | "destination";
 };
+
+type FlightListSearchFormProps = {
+	initialValues: FlightSearchParams;
+	onSearch: (params: FlightSearchParams) => void;
+	isLoading?: boolean;
+};

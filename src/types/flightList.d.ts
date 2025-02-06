@@ -62,7 +62,7 @@ type FlightListProps = {
 	cabinClass: string;
 };
 
-interface FlightCardProps {
+type FlightCardProps = {
 	leg: FlightListProps["legs"][string];
 	itinerary: FlightListProps["itineraries"][number];
 	isRoundTrip: boolean;
@@ -70,4 +70,15 @@ interface FlightCardProps {
 	isOpen: boolean;
 	itemValue: string;
 	onSelectFlight: (legId: string) => void;
-}
+};
+
+type FlightSortProps = {
+	sortType: SortType;
+	setSortType: (type: SortType) => void;
+	sortOption: SortOption;
+	setSortOption: (option: SortOption) => void;
+	cheapestPrice: FlightListProps["itineraries"][number] | undefined;
+};
+
+type SortOption = "top" | "price" | "departure" | "arrival" | "duration";
+type SortType = "best" | "cheapest";

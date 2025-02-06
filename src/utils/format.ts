@@ -9,17 +9,9 @@ export const formatPrice = (price: number, currency = "USD") => {
 
 export const formatTime = (isoString: string) =>
 	new Date(isoString).toLocaleTimeString([], {
-		hour: "numeric",
+		hour: "2-digit",
 		minute: "2-digit",
-		hour12: true,
 	});
 
-export const formatDuration = (minutes: number) => {
-	const hours = Math.floor(minutes / 60);
-	const remainingMinutes = minutes % 60;
-
-	if (minutes === 0) return "0m";
-	if (remainingMinutes === 0) return `${hours}h`;
-	if (hours === 0) return `${remainingMinutes}m`;
-	return `${hours}h ${remainingMinutes}m`;
-};
+export const formatDuration = (minutes: number) =>
+	`${Math.floor(minutes / 60)}h ${minutes % 60}m`;

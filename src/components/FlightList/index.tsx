@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { FlightCard } from "./FlightCard";
 import { LoadMoreButton } from "./LoadMoreButton";
 import { Spinner } from "@/components/ui/Spinner";
+import { FlightSortControls } from "./FlightSortControls";
 
 export const FlightList = ({
 	itineraries,
@@ -16,6 +17,14 @@ export const FlightList = ({
 	const [isLoading, setIsLoading] = useState(false);
 	const [displayCount, setDisplayCount] = useState(10);
 	const [isLoadingMore, setIsLoadingMore] = useState(false);
+	const [sortType, setSortType] = useState<SortType>("best");
+	const [sortOption, setSortOption] = useState<SortOption>("top");
+	const isRoundTrip = itineraries[0]?.legIds.length > 1;
+
+	const cheapestPrice = itineraries.reduce(
+		(min, itinerary) => (itinerary.price.raw < min.price.raw ? itinerary : min),
+		itineraries[0],
+	);
 
 	// Handles the browser's back button functionality and updates the browser history based on the selectedOutboundLegId
 	useEffect(() => {
@@ -59,9 +68,59 @@ export const FlightList = ({
 		}
 		setIsLoadingMore(false);
 	};
+	const getHeadingText = () => {
+		const prefix =
+			(sortType === "best" && sortOption === "top") ||
+			(sortType === "cheapest" && sortOption === "top")
+				? "Top"
+				: "All";
+		if (!isRoundTrip) {
+			return `${prefix} flights`;
+		}
+
+		return !selectedOutboundLegId
+			? `${prefix} departing flights`
+			: `${prefix} Return flights`;
+	};
+
+	const sortedItineraries = [...itineraries]
+		.slice(0, displayCount)
+		.sort((a, b) => {
+			const legA = legs[a.legIds[0]];
+			const legB = legs[b.legIds[0]];
+
+			switch (sortOption) {
+				case "price":
+					return a.price.raw - b.price.raw;
+				case "departure":
+					return (
+						new Date(legA.departure).getTime() -
+						new Date(legB.departure).getTime()
+					);
+				case "arrival":
+					return (
+						new Date(legA.arrival).getTime() - new Date(legB.arrival).getTime()
+					);
+				case "duration":
+					return legA.durationInMinutes - legB.durationInMinutes;
+				default:
+					if (sortType === "cheapest") {
+						return a.price.raw - b.price.raw;
+					}
+					return 0;
+			}
+		});
 
 	return (
 		<div className="space-y-6 max-w-4xl mx-auto">
+			<FlightSortControls
+				sortType={sortType}
+				setSortType={setSortType}
+				sortOption={sortOption}
+				setSortOption={setSortOption}
+				cheapestPrice={cheapestPrice}
+				heading={getHeadingText()}
+			/>
 			{isLoading ? (
 				<div className="flex items-center justify-center py-12">
 					<div className="flex items-center gap-3">
@@ -78,7 +137,7 @@ export const FlightList = ({
 						value={openItem}
 						onValueChange={setOpenItem}
 					>
-						{itineraries.map((itinerary, index) => {
+						{sortedItineraries.map((itinerary, index) => {
 							const isRoundTrip = itinerary.legIds.length > 1;
 							const showingReturnFlight = selectedOutboundLegId !== null;
 							const leg =

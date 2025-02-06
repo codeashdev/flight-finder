@@ -1,4 +1,5 @@
 import { NavBar } from "@/components/NavBar";
+import { SearchForm } from "@/components/SearchForm";
 import { useTheme } from "@/context/ThemeContext";
 
 export default function Home() {
@@ -30,6 +31,9 @@ export default function Home() {
 					<h1 className="text-4xl sm:text-5xl text-center absolute bottom-0 left-1/2 -translate-x-1/2">
 						Flights
 					</h1>
+				</div>
+				<div className="relative z-10">
+					<SearchForm />
 				</div>
 			</main>
 		</div>

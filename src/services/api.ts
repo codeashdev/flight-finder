@@ -97,3 +97,46 @@ export const getPriceCalendar = async (params: {
 		throw error;
 	}
 };
+
+export const searchFlights = async (
+	params: FlightSearchParams,
+): Promise<FlightResponse> => {
+	const searchParams: Record<string, string | undefined> = {
+		originSkyId: params.originSkyId,
+		destinationSkyId: params.destinationSkyId,
+		originEntityId: params.originEntityId,
+		destinationEntityId: params.destinationEntityId,
+		date: params.date,
+		returnDate: params.returnDate,
+		cabinClass: params.cabinClass || "economy",
+		adults: params.adults?.toString() || "1",
+		childrens: params.childrens?.toString(),
+		infants:
+			params.infantsInSeat || params.infantsOnLap
+				? ((params.infantsInSeat || 0) + (params.infantsOnLap || 0)).toString()
+				: undefined,
+		sortBy: params.sortBy || "best",
+		limit: "2",
+		carriersIds: params.carriersIds?.toString(),
+		currency: params.currency || "USD",
+
+		market: "en-US",
+	};
+
+	// Remove undefined parameters and ensure all values are strings
+	const cleanParams = Object.fromEntries(
+		Object.entries(searchParams)
+			.filter(([_, value]) => value !== undefined)
+			.map(([key, value]) => [key, value as string]),
+	);
+
+	const response = await apiClient.get("/v2/flights/searchFlightsWebComplete", {
+		params: cleanParams,
+	});
+
+	if (!response.data.status) {
+		throw new Error(response.data.message || "Failed to fetch flights");
+	}
+
+	return response.data;
+};

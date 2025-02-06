@@ -15,7 +15,7 @@ import { DatePickerWithRange } from "../DatePicker/DatePicker";
 import { cn } from "@/lib/utils";
 import { usePriceCalendar } from "@/hooks/usePriceCalendar";
 
-export const SearchForm = () => {
+export const SearchForm = ({ onSubmit, isLoading }: SearchFormProps) => {
 	const [values, setValues] = useState({
 		date: "",
 		returnDate: "",
@@ -62,6 +62,7 @@ export const SearchForm = () => {
 		dropdownRef: destinationDropdownRef,
 	} = useAirportSearch();
 
+	// Fetch price data for the date range
 	const { data: priceData } = usePriceCalendar({
 		originSkyId: selectedOrigin?.skyId,
 		destinationSkyId: selectedDestination?.skyId,
@@ -69,6 +70,32 @@ export const SearchForm = () => {
 		isCalendarOpen,
 		page: "searchForm",
 	});
+
+	const handleSubmit = (e: React.FormEvent) => {
+		e.preventDefault();
+
+		if (!selectedOrigin || !selectedDestination) {
+			alert("Please select airports from the dropdown");
+			return;
+		}
+
+		onSubmit({
+			originSkyId: selectedOrigin.skyId,
+			destinationSkyId: selectedDestination.skyId,
+			originEntityId: selectedOrigin.entityId,
+			destinationEntityId: selectedDestination.entityId,
+			date: values.date,
+			returnDate:
+				values.tripType === "round-trip" ? values.returnDate : undefined,
+			adults: values.passengers.adults,
+			childrens: values.passengers.children,
+			infantsInSeat: values.passengers.infantsInSeat,
+			infantsOnLap: values.passengers.infantsOnLap,
+			currency: "USD",
+			cabinClass: values.cabinClass,
+			countryCode: "US",
+		});
+	};
 
 	// Swap locations between origin and destination
 	const handleSwapLocations = () => {
@@ -97,6 +124,7 @@ export const SearchForm = () => {
 
 	return (
 		<form
+			onSubmit={handleSubmit}
 			className={`bg-card rounded-lg px-4 pt-2 pb-10 max-w-5xl z-0 mb-4 shadow-[0_1px_3px_0_rgba(60,64,67,0.3),0_4px_8px_3px_rgba(60,64,67,0.15)] relative ${
 				isMobile ? "mx-4" : "mx-auto"
 			}`}
@@ -213,6 +241,21 @@ export const SearchForm = () => {
 						pageIndex={"flightsearch"}
 					/>
 				</div>
+			</div>
+			<div className="absolute left-1/2 bottom-0 -translate-x-1/2 translate-y-1/2">
+				<button
+					type="submit"
+					disabled={
+						isLoading ||
+						!selectedOrigin ||
+						!selectedDestination ||
+						!values.date ||
+						(values.tripType === "round-trip" && !values.returnDate)
+					}
+					className="h-12 px-8 bg-[#4b8dff] text-white rounded-full hover:bg-[#3b7ae8] transition-colors disabled:bg-[#2f3136] disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
+				>
+					{isLoading ? "Searching..." : "Explore"}
+				</button>
 			</div>
 		</form>
 	);

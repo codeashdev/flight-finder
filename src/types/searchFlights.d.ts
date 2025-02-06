@@ -27,3 +27,42 @@ type CabinClassSelectorProps = {
 	onOpenChange: (open: boolean) => void;
 	onChange: (value: string) => void;
 };
+
+type AirportSelection = {
+	skyId: string;
+	entityId: string;
+	displayName: string;
+	subtitle: string;
+};
+
+type SwapLocationsProps = {
+	selectedOrigin: AirportSelection;
+	selectedDestination: AirportSelection;
+	handleOriginSelect: (airport: Airport) => void;
+	handleDestinationSelect: (airport: Airport) => void;
+	setShowOriginDropdown: (show: boolean) => void;
+	setShowDestinationDropdown: (show: boolean) => void;
+};
+
+type LocationInputProps = {
+	value: string;
+	placeholder: string;
+	onChange: (value: string) => void;
+	onFocus: () => void;
+	showDropdown: boolean;
+	setShowDropdown: (show: boolean) => void;
+	dropdownRef: React.RefObject<HTMLDivElement>;
+	status: "idle" | "pending" | "error" | "success";
+	fetchStatus: "idle" | "fetching";
+	airports: Airport[] | undefined;
+	onSelect: (airport: Airport) => void;
+	inputType: "origin" | "destination";
+};
+
+type GroupedAirports = {
+	cityName: string;
+	country: string;
+	cityId: string;
+	citySkyId?: string;
+	airports: Airport[];
+};

@@ -5,6 +5,11 @@ import { TripTypeSelector } from "./TripTypeSelector";
 import { updatePassengerCount } from "@/utils/updatePassengerCount";
 import { PassengerSelector } from "./PassengerSelector";
 import { CabinClassSelector } from "./CabinClassSelector";
+import { Button } from "../ui/button";
+import { useAirportSearch } from "@/hooks/useAirportSearch";
+import { swapLocations } from "@/utils/swapLocations";
+import { ArrowRightLeft } from "lucide-react";
+import { LocationInput } from "./LocationInput";
 
 export const SearchForm = () => {
 	const [values, setValues] = useState({
@@ -22,6 +27,50 @@ export const SearchForm = () => {
 	const [isCabinClassOpen, setIsCabinClassOpen] = useState(false);
 	const isMobile = useMediaQuery("(max-width: 640px)");
 
+	// Origin airport search
+	const {
+		searchTerm: originTerm,
+		selected: selectedOrigin,
+		showDropdown: showOriginDropdown,
+		airports: originAirports,
+		status,
+
+		fetchStatus,
+		handleInputChange: handleOriginChange,
+		handleSelect: handleOriginSelect,
+		setShowDropdown: setShowOriginDropdown,
+		dropdownRef: originDropdownRef,
+	} = useAirportSearch();
+
+	// Destination airport search
+	const {
+		searchTerm: destinationTerm,
+		selected: selectedDestination,
+		showDropdown: showDestinationDropdown,
+		airports: destinationAirports,
+		status: destinationStatus,
+		fetchStatus: destinationFetchStatus,
+		handleInputChange: handleDestinationChange,
+		handleSelect: handleDestinationSelect,
+		setShowDropdown: setShowDestinationDropdown,
+		dropdownRef: destinationDropdownRef,
+	} = useAirportSearch();
+
+	// Swap locations between origin and destination
+	const handleSwapLocations = () => {
+		if (!selectedOrigin || !selectedDestination) return;
+
+		swapLocations({
+			selectedOrigin,
+			selectedDestination,
+			handleOriginSelect,
+			handleDestinationSelect,
+			setShowOriginDropdown,
+			setShowDestinationDropdown,
+		});
+	};
+
+	// Update passenger count
 	const handlePassengerUpdate = (
 		type: keyof PassengerCounts,
 		increment: boolean,
@@ -33,7 +82,11 @@ export const SearchForm = () => {
 	};
 
 	return (
-		<form className="bg-card rounded-lg mx-auto px-4 pt-2 pb-10 max-w-5xl  mb-4 shadow-[0_1px_3px_0_rgba(60,64,67,0.3),0_4px_8px_3px_rgba(60,64,67,0.15)] relative">
+		<form
+			className={`bg-card rounded-lg px-4 pt-2 pb-10 max-w-5xl  mb-4 shadow-[0_1px_3px_0_rgba(60,64,67,0.3),0_4px_8px_3px_rgba(60,64,67,0.15)] relative ${
+				isMobile ? "mx-4" : "mx-auto"
+			}`}
+		>
 			<div
 				className={`flex items-center mb-4 ${
 					isMobile ? "justify-center gap-0" : "gap-4"
@@ -68,6 +121,56 @@ export const SearchForm = () => {
 								cabinClass: value as typeof values.cabinClass,
 							})
 						}
+					/>
+				</div>
+			</div>
+
+			<div
+				className={`${isMobile ? "flex flex-col gap-y-2" : "flex items-center"} gap-0`}
+			>
+				<div className="flex items-center  mr-2 w-full">
+					{/* Origin Location Input */}
+					<LocationInput
+						value={selectedOrigin?.displayName || originTerm}
+						placeholder="Where from?"
+						onChange={handleOriginChange}
+						onFocus={() => setShowOriginDropdown(true)}
+						setShowDropdown={setShowOriginDropdown}
+						showDropdown={showOriginDropdown}
+						dropdownRef={originDropdownRef as React.RefObject<HTMLDivElement>}
+						status={status}
+						fetchStatus={fetchStatus as "fetching" | "idle"}
+						airports={originAirports}
+						onSelect={handleOriginSelect}
+						inputType="origin"
+					/>
+
+					{/* Swap Locations Button */}
+					<Button
+						type="button"
+						onClick={handleSwapLocations}
+						disabled={!selectedOrigin || !selectedDestination}
+						className="w-8 h-8 flex items-center justify-center relative rounded-full bg-transparent hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+					>
+						<ArrowRightLeft className="text-black dark:text-white" size={14} />
+					</Button>
+
+					{/* Destination Location Input */}
+					<LocationInput
+						value={selectedDestination?.displayName || destinationTerm}
+						placeholder="Where to?"
+						onChange={handleDestinationChange}
+						onFocus={() => setShowDestinationDropdown(true)}
+						setShowDropdown={setShowDestinationDropdown}
+						showDropdown={showDestinationDropdown}
+						dropdownRef={
+							destinationDropdownRef as React.RefObject<HTMLDivElement>
+						}
+						status={destinationStatus}
+						fetchStatus={destinationFetchStatus as "fetching" | "idle"}
+						airports={destinationAirports}
+						onSelect={handleDestinationSelect}
+						inputType="destination"
 					/>
 				</div>
 			</div>

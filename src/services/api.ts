@@ -116,7 +116,7 @@ export const searchFlights = async (
 				? ((params.infantsInSeat || 0) + (params.infantsOnLap || 0)).toString()
 				: undefined,
 		sortBy: params.sortBy || "best",
-		limit: "2",
+		limit: "100",
 		carriersIds: params.carriersIds?.toString(),
 		currency: params.currency || "USD",
 
